@@ -78,16 +78,3 @@
 1. Pool de conexões com reuse ≥ 98 %
 2. Dispatcher assíncrono → menos threads bloqueadas
 3. Timeouts granulares evitam *thread starvation* em parceiros lentos
-
----
-
-## ✅ Checklist Pós-Deploy
-
-* [x] Smoke tests concluídos
-* [x] Dashboards Kibana atualizados
-* [x] Alertas de latência recalibrados
-* [x] Documentação publicada na Confluence
-
----
-
-💬 Dúvidas ou incidentes? Abra uma *issue* ou mencione `@infra-eng` no Slack.
