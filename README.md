@@ -21,7 +21,7 @@
 
 ### MS-NotificaPedido
 
-* 🔄 **2 instâncias** (HPA @ 60 % CPU)
+* 🔄 **2 instâncias**
 * 🔒 Logs com máscara de dados sensíveis
 * 🧩 Cast dinâmico para `OrderPlacement`
 * 🚀 Upgrade **Feign + OkHttp**
