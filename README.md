@@ -1,75 +1,64 @@
 # 📢 Release Notes
 
-*Deployed: **18-06-2025** • Status: **Em produção***
+*Deployed: **2025-07-17** • Status: **Em produção***
 
 ---
 
 ## 🚀 Destaques
 
-|                                         | Descrição                                                                                       | Benefício                                                                |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| 🔐 **Rotação de chaves Vault**          | Seller · Pedido · Produto · Suggestion                                                          | Conformidade 100 % • chaves renovadas a cada 24 h                        |
-| 🏗️ **Fargate ARM64 (Graviton)**        | Suggestion · Produto · Pedido · Seller · Delivery Promise Listener · NotificaPedido · Simulacao | –18 % de custo por vCPU • +12 % de req/s/W                               |
-| 🛰️ **Alta disponibilidade (multi-AZ)** | Seller · Pedido · Produto · Suggestion · Delivery Promise Listener                              | ECS mantém **2 tasks** mínimas → tolerância a falha de zona (RTO < 30 s) |
-| 🤖 **Autoscaling automatizado**         | Delivery Promise Listener                                                                       | Escala on-demand • –25 % de custo fora de pico                           |
-| 🛠️ **Débito técnico IUCONFIA**         | Refatoração obrigatória concluída                                                               | Builds 15 % mais rápidos                                                 |
+|                                        | Descrição                                                          | Benefício                                                 |
+| -------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------- |
+| 🛍️ **Rota de provisionamento Seller** | **Seller-MS**                                                      | Pré-requisito para DPCP • onboarding automático via Cadastro Seller 2.0           |
+| ❌ **Cancelamento parcial**             | **OrderStatus-MS** (definitivo) · **Pedido-MS** (versão paliativa) | Envio de Pedido para time de atendimento via email         |
+| ⚙️ **Cache & Timeout Handling**        | **Simulacao-MS**                                                   | GET /baseurl → menor latência • cálculo de frete mais resiliente |
+| 📚 **ReadOnly Scope**                  | **Suggestion-MS**                                                  | Suporte ao time de Catálogo (consultas sem lock)          |
+| 💾 **Elasticache cluster**             | Todos os MS                                                        | Hit rate 92 % • CPU –15 %                                 |
+| 💰 **FinOps**                          | Logs · Clusters · Storage                                          | –10 % custos mensais nesses pilares                                     |
+| 📊 **Dashboards operacionais**         | Integrações & Tempos de frete                                      | Visão seller-a-seller • alertas em tempo real             |
+| ✅ **IUConfia Compliance**              | 100 % aderente às boas práticas                                    | Auditoria green-light                                     |
 
 ---
 
 ## 📦 Mudanças por Microserviço
 
-### Seller
+### Seller-MS
 
-* 🔐 Rotação diária de chaves Vault
-* 🛰️ **2 tasks** por AZ no ECS
-* 🏗️ **Fargate ARM64 (Graviton)**
+* 🛍️ **/provision** — rota de provisionamento de seller (DPCP ready)
+* 🔐 Chaves Vault já entram no ciclo de rotação 24 h
 
-### Pedido
+### OrderStatus-MS
 
-* 🔐 Rotação diária de chaves Vault
-* 🛰️ **2 tasks** por AZ
-* 🏗️ **Fargate ARM64 (Graviton)**
+* ❌ **/cancel** — cancelamento **parcial**
 
-### Produto
+### Pedido-MS
 
-* 🔐 Rotação diária de chaves Vault
-* 🛰️ **2 tasks** por AZ
-* 🏗️ **Fargate ARM64 (Graviton)**
-* 📡 API interna de confirmação de produto (continuidade da sprint 23)
+* ❌ **/cancel** — cancelamento **parcial (paliativo)**
 
-### Suggestion
+  * A solicitação de cancelamento dispara um e-mail para o time de Atendimento com as informações do pedido
 
-* 🔐 Rotação diária de chaves Vault
-* 🛰️ **2 tasks** por AZ
-* 🏗️ **Fargate ARM64 (Graviton)**
+### Simulacao-MS
 
-### Delivery Promise Listener
+* ⚡ **Elasticache** para GET /baseUrl — hit rate 92 %
+* ⏱️ Mapeia `HttpTimeoutException` do Seller → `422 UNPROCESSABLE_ENTITY` consistente
 
-* 🤖 Autoscaling via KEDA (CPU 50 %, queue ≥ 100)
-* 🛰️ **2 tasks** por AZ
-* 🏗️ **Fargate ARM64 (Graviton)**
+### Suggestion-MS
 
-### NotificaPedido -- Simulacao
-
-* 🏗️ **Fargate ARM64 (Graviton)**
+* 📚 **ReadOnly scope** ativado
 
 ---
 
 ## 🔄 Melhorias Cross-Service
 
-| Tema                   | Antes            | Agora                  |
-| ---------------------- | ---------------- | ---------------------- |
-| **Vault rotation**     | Manualeventual   | Automática 24 h        |
-| **Disponibilidade**    | 1 task / serviço | **2 tasks** (multi-AZ) |
-| **Custos EC2/Fargate** | baseline 100 %   | **–18 %** após ARM64   |
-| **Tempo de build**     | 14 min           | **12 min** (–15 %)     |
+* **Cluster Elasticache (Redis 7)** — cache compartilhado - disponível para integração de todos microserviços.
+* **FinOps contínuo**
+
+  * Filtragem de logs DEBUG/TRACE fora de produção.
+  * Rightsizing de tarefas Fargate ARM64.
+  * Limpeza automática de volumes efêmeros.
+* **Dashboards Datadog**
+
+  * *Integrações* (latência & erros por endpoint).
+  * *Tempos de frete* com drill-down seller.
+* **IUConfia** — todas as recomendações atendidas (auth, logging, secrets, métricas).
 
 ---
-
-## 🔧 Detalhe Técnico — Fargate ARM64 (Graviton)
-
-| Métrica     | x86 (Fargate m5) | ARM64 (Fargate g5) | Variação |
-| ----------- | ---------------- | ------------------ | -------- |
-| Custo \$/h  | US\$ 0,096       | **US\$ 0,079**     | –18 %    |
-| req/s médio | 540              | **605**            | +12 %    |
-| Watts / req | 0,31             | **0,27**           | –13 %    |
