@@ -24,7 +24,6 @@
 ### Seller-MS
 
 * 🛍️ **/provision** — rota de provisionamento de seller (DPCP ready)
-* 🔐 Chaves Vault já entram no ciclo de rotação 24 h
 
 ### OrderStatus-MS
 
@@ -49,7 +48,7 @@
 
 ## 🔄 Melhorias Cross-Service
 
-* **Cluster Elasticache (Redis 7)** — cache compartilhado - disponível para integração de todos microserviços.
+* **Cluster Elasticache** — Cache compartilhado — disponível para integração de todos microserviços.
 * **FinOps contínuo**
 
   * Filtragem de logs DEBUG/TRACE fora de produção.
