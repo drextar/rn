@@ -1,4 +1,4 @@
-# 📢 Release Notes — Sprint 28
+# 📢 Release Notes
 
 *Deployed: • Status: **Em produção***
 
