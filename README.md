@@ -70,6 +70,27 @@
 ## 📋 Conclusão de Homologação de Sellers
 
 * [x] **LL**
+
+🚀 Destaques de Performance e Eficiência
+1️⃣ Integração Marketplace → Seller
+📉 Tempo de resposta 92% mais rápido
+De 697 ms para 55 ms → experiências mais fluidas para parceiros e clientes.
+
+2️⃣ Simulador de Preços e Frete
+⚡ +253% de capacidade de processamento
+De 140 para 494 TPS → suporte a picos de acesso sem degradação.
+
+3️⃣ Redução de Carga no Seller
+🛑 90% menos chamadas desnecessárias
+Uso inteligente de cache (TTL 5 min) → menor custo e menor risco de gargalo.
+
+4️⃣ Autorizador de API
+🔓 85% menos requisições para autenticação
+Cache de credenciais → ganho de velocidade e economia de infraestrutura.
+
+💡 Mensagem final no slide:
+
+“Mais rápido, mais estável e mais barato — performance que gera valor para o negócio e para o cliente.”
 * [x] **Bravium**
 * [x] **Netshoes**
 * [x] **Grand Cru**
