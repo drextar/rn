@@ -6,92 +6,67 @@
 
 ## 🚀 Destaques
 
-|                                      | Entrega                | Valor Gerado                              |
-| ------------------------------------ | ---------------------- | ----------------------------------------- |
-| 📈 **Autoscaling SQS**               | **Produto-MS**         | Escala por backlog • picos sem fila       |
-| ⚡ **Cache de Frete**                 | **Simulacao-MS**       | 98 % hit • –90 % chamadas ao Seller       |
-| ✏️ **Write Scope + Regex Hardening** | **Suggestion-MS**      | Suporte Catálogo • validações reforçadas  |
-| 🔀 **Proxy Cross-Account**           | Bridge (Conta A → B)   | P95 integração **697 ms → 55 ms** (-92 %) |
-| 💾 **Camadas de Cache**              | Gateways & Frete       | Latência menor • CPU –15 %                |
-| 📊 **Datadog Itaú**                  | Migração concluída     | Métricas + Log + Trace num único lugar    |
-| 💰 **FinOps Sprint**                 | ECS & Clusters Dev/Hom | Custos ECS **-78 %** (tabela abaixo)      |
+|                                   | Entrega            | Valor Gerado                                                                |
+| --------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| ❌ **Cache de cancelamento**       | **OrderStatus-MS** | Menos chamadas repetidas no fluxo de cancelamento • resposta mais rápida    |
+| 🛍️ **Cadastro EQ3**              | **Seller-MS**      | Fluxo definido para onboarding conforme padrão EQ3                          |
+| ⚖️ **RN frete > R\$1.000**        | **Simulation-MS**  | Tratamento/validação para cenários de frete atípico                         |
+| 💸 **RN variação de preço ±60%**  | **Produto-MS**     | Guardrails contra preços fora do esperado (maior/menor que 60% do original) |
+| 📑 **Template de logs unificado** | **Cross-services** | Observabilidade padronizada • troubleshooting mais simples                  |
+| 📊 **Dashboards Datadog Itaú**    | **Cross-services** | Painéis migrados e padronizados por domínio                                 |
 
 ---
 
 ## 📦 Mudanças por Microserviço
 
-| MS                | Principais Itens Entregues                               |
-| ----------------- | -------------------------------------------------------- |
-| **Produto-MS**    | **Autoscaling SQS** — 1 task ↔ 250 msgs (min 2 / max 12) |
-| **Simulacao-MS**  | Cache Redis (TTL 5 min) para retorno de frete            |
-| **Suggestion-MS** | Write scope ativado • Validações Regex reforçadas        |
+### **OrderStatus-MS**
+
+* 🗃️ **Cache para fluxo de cancelamento de pedido**
+
+  * Evita reprocessamento de cancelamentos em curto intervalo.
+  * Respostas idempotentes para requisições repetidas.
+
+### **Seller-MS**
+
+* 🧭 **Definição do fluxo de Cadastro EQ3**
+
+  * Regras, contratos e estados mapeados para o onboarding de sellers no padrão EQ3.
+
+### **Simulation-MS**
+
+* 📏 **Tratamento de RN quando frete retornado pelo Seller > R\$ 1.000,00**
+
+  * Sinalização/validação de outliers e encaminhamento conforme regra de negócio.
+
+### **Produto-MS**
+
+* 🧮 **Tratamento de RN para variação de preço**
+
+  * Bloqueio quando preço enviado pelo Seller é **> 60%** ou **< 60%** do preço original.
+  * Gatilhos de auditoria e alertas operacionais associados.
 
 ---
 
 ## 🔄 Melhorias Cross-Service
 
-* **Proxy de Arquitetura** — Bridge consome Gateway externo (Conta A), ajusta payload e roteia para Gateway interno (Conta B).
-* **Caches Estratégicos** —
+* 🧰 **Novo template de logs**
 
-  * Gateways interno & externo (evita authorizer)
-  * Frete Seller (TTL 5 min, 98 % hit)
-  * BaseURL Seller centralizada (cluster Redis compartilhado)
-* **Datadog Itaú** — todos os MS reportando métricas, logs e traces no tenant Itaú
-* **FinOps** —
+  * **JSON estruturado** com `traceId`, `correlationId`, `service`, `endpoint`, `latencyMs`, `statusCode`.
+  * **Mascaramento de PII** e classificação de níveis (`INFO` core, `DEBUG` fluxo).
+  * Padrão Definido no OrderStatus-MS e será adotado em todos os MS.
+* 📈 **Migração de dashboards — Datadog Itaú**
 
-  * Clusters Dev/Hom desligados quando *idle*
-  * Rightsizing Fargate ARM64
-  * Filtragem de logs DEBUG/TRACE fora de produção
-* **IUConfia** — auditoria contínua, 100 % compliant
+  * Painéis por domínio (Pedido, Seller, Produto, Simulation) com latência, taxa de erro, throughput e saturação.
 
 ---
 
-## 💸 FinOps – Custos ECS
+## ✅ Checklist Pós-Deploy
 
-| Período          | Antes         | Agora             | Economia            |
-| ---------------- | ------------- | ----------------- | ------------------- |
-| **Dia**          | US\$ 15,25    | **US\$ 3,31**     | –US\$ 11,94 (-78 %) |
-| **Mês** (\~30 d) | US\$ 457,50   | **US\$ 99,30**    | –US\$ 358,20        |
-| **Ano** (365 d)  | US\$ 5 566,25 | **US\$ 1 208,15** | –US\$ 4 358,10      |
-
----
-
-## 📊 Métricas “Antes × Depois”
-
-| Métrica                                   | Antes     | Depois    | Δ                   |
-| ----------------------------------------- | --------- | --------- | ------------------- |
-| **P95 integração** (Marketplace → Seller) | 697 ms    | **55 ms** | **-92 %**           |
-| **TPS Simulacao-MS**                      | 140       | **494**   | **+253 %**          |
-| **Chamadas Seller evitadas** (frete)      | —         | **-90 %** | via cache TTL 5 min |
-| **Autorizador Gateway**                   | 100 % req | **-85 %** | cache autenticação  |
+* [x] Smoke tests (Prod · Homol · Dev)
+* [x] Dashboards Datadog publicados e vinculados aos serviços
+* [x] Logs padronizados ativos (amostragem e mascaramento validados)
+* [x] Regras de negócio (frete/price) monitoradas com métricas e alertas
 
 ---
 
-## 📋 Conclusão de Homologação de Sellers
-
-* [x] **LL**
-
-🚀 Destaques de Performance e Eficiência
-1️⃣ Integração Marketplace → Seller
-📉 Tempo de resposta 92% mais rápido
-De 697 ms para 55 ms → experiências mais fluidas para parceiros e clientes.
-
-2️⃣ Simulador de Preços e Frete
-⚡ +253% de capacidade de processamento
-De 140 para 494 TPS → suporte a picos de acesso sem degradação.
-
-3️⃣ Redução de Carga no Seller
-🛑 90% menos chamadas desnecessárias
-Uso inteligente de cache (TTL 5 min) → menor custo e menor risco de gargalo.
-
-4️⃣ Autorizador de API
-🔓 85% menos requisições para autenticação
-Cache de credenciais → ganho de velocidade e economia de infraestrutura.
-
-💡 Mensagem final no slide:
-
-“Mais rápido, mais estável e mais barato — performance que gera valor para o negócio e para o cliente.”
-* [x] **Bravium**
-* [x] **Netshoes**
-* [x] **Grand Cru**
-* [x] **Lojas Sages**
+💬 **Dúvidas ou incidentes?** Abra uma *issue* ou mencione **@infra-eng** no Slack.
